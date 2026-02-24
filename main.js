@@ -65,7 +65,6 @@ buttonView.addEventListener("click", () => {
 
   const records = parseIidxCsv(inputCsv.value);
 
-  let prev = null;
   for (const record of records) {
     const row = tbody.insertRow();
     row.insertCell().textContent = record.chart.song.version;
@@ -76,12 +75,6 @@ buttonView.addEventListener("click", () => {
     row.insertCell().textContent = record.result.missCount;
     row.insertCell().textContent = record.result.djLevel;
     row.insertCell().textContent = record.result.score;
-
-    if (prev != null && compareChart(prev.chart, record.chart) >= 0) {
-      console.log("PREV", prev);
-      console.log("CURRENT", record);
-    }
-    prev = record;
   }
 });
 
