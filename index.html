@@ -6,23 +6,30 @@
   </head>
 
   <body>
-    <h1>IIDX CSVデータ閲覧ツール</h1>
+    <h1>IIDX CSV比較ツール</h1>
 
-    CSV:
-    <textarea id="inputCsv"></textarea>
+    Player1:
+    <textarea id="inputCsv1"></textarea>
 
-    <button id="buttonView">view</button>
+    Player2:
+    <textarea id="inputCsv2"></textarea>
 
-    <table id="viewTable">
+    <button id="buttonCompare">比較</button>
+
+    <table id="comparisonTable">
       <thead>
         <th>バージョン</th>
         <th>曲名</th>
         <th>難易度</th>
         <th>レベル</th>
-        <th>ランプ</th>
-        <th>ミスカウント</th>
-        <th>DJレベル</th>
-        <th>スコア</th>
+        <th>ランプ1</th>
+        <th>ランプ2</th>
+        <th>ミスカウント1</th>
+        <th>ミスカウント2</th>
+        <th>DJレベル1</th>
+        <th>DJレベル2</th>
+        <th>スコア1</th>
+        <th>スコア2</th>
       </thead>
       <tbody></tbody>
     </table>

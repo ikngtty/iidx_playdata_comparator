@@ -54,29 +54,84 @@ const DIFFICUTY_ORDER = (() => {
   return m;
 })();
 
-const inputCsv = document.getElementById("inputCsv");
-const buttonView = document.getElementById("buttonView");
-const viewTable = document.getElementById("viewTable");
+const inputCsv1 = document.getElementById("inputCsv1");
+const inputCsv2 = document.getElementById("inputCsv2");
+const buttonCompare = document.getElementById("buttonCompare");
+const comparisonTable = document.getElementById("comparisonTable");
 
-buttonView.addEventListener("click", () => {
-  const tbody = viewTable.tBodies[0];
+buttonCompare.addEventListener("click", () => {
+  const tbody = comparisonTable.tBodies[0];
 
+  // テーブルのリセット
   tbody.replaceChildren();
 
-  const records = parseIidxCsv(inputCsv.value);
+  // ソート
+  const [records1, records2] = [inputCsv1, inputCsv2].map((inputCsv) => {
+    const records = [...parseIidxCsv(inputCsv.value)];
+    records.sort((record1, record2) =>
+      compareChart(record1.chart, record2.chart),
+    );
+    return records;
+  });
 
-  for (const record of records) {
-    const row = tbody.insertRow();
-    row.insertCell().textContent = record.chart.song.version;
-    row.insertCell().textContent = record.chart.song.title;
-    row.insertCell().textContent = record.chart.difficulty;
-    row.insertCell().textContent = record.chart.level;
-    row.insertCell().textContent = record.result.clearType;
-    row.insertCell().textContent = record.result.missCount;
-    row.insertCell().textContent = record.result.djLevel;
-    row.insertCell().textContent = record.result.score;
+  // 記録を比較しようとして双方の曲が違った時に、どちらを先に処理するか判断するための比較関数
+  const compare = (record1, record2) => {
+    // nullが常に大きい
+    if (record1 == null) {
+      return 1;
+    } else if (record2 == null) {
+      return -1;
+    }
+
+    return compareChart(record1.chart, record2.chart);
+  };
+
+  // テーブルの構築
+  {
+    let [i1, i2] = [0, 0];
+    while (i1 < records1.length || i2 < records2.length) {
+      const [record1, record2] = [records1[i1], records2[i2]];
+
+      const delta = compare(record1, record2);
+      switch (true) {
+        case delta < 0:
+          addComparisonRow(tbody, record1.chart, record1.result, null);
+          i1++;
+          break;
+        case delta > 0:
+          addComparisonRow(tbody, record2.chart, null, record2.result);
+          i2++;
+          break;
+        default:
+          addComparisonRow(
+            tbody,
+            record1.chart,
+            record1.result,
+            record2.result,
+          );
+          i1++;
+          i2++;
+          break;
+      }
+    }
   }
 });
+
+function addComparisonRow(tbody, chart, result1, result2) {
+  const row = tbody.insertRow();
+  row.insertCell().textContent = chart.song.version;
+  row.insertCell().textContent = chart.song.title;
+  row.insertCell().textContent = chart.difficulty;
+  row.insertCell().textContent = chart.level;
+  row.insertCell().textContent = result1?.clearType;
+  row.insertCell().textContent = result2?.clearType;
+  row.insertCell().textContent = result1?.missCount;
+  row.insertCell().textContent = result2?.missCount;
+  row.insertCell().textContent = result1?.djLevel;
+  row.insertCell().textContent = result2?.djLevel;
+  row.insertCell().textContent = result1?.score;
+  row.insertCell().textContent = result2?.score;
+}
 
 function compareChart(chart1, chart2) {
   const songDelta = compareSong(chart1.song, chart2.song);
