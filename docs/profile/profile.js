@@ -7,10 +7,18 @@ import {
   signOut,
   TwitterAuthProvider,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import {
+  doc,
+  getDocFromServer,
+  getFirestore,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const textLoginStatus = document.getElementById("textLoginStatus");
 const buttonLogin = document.getElementById("buttonLogin");
 const buttonLogout = document.getElementById("buttonLogout");
+const formProfile = document.getElementById("formProfile");
+const fieldsetProfile = document.getElementById("fieldsetProfile");
 
 const firebaseConfig = {
   apiKey: "AIzaSyAm4Yb7EfBoXXgtp-rilAkjy7XxeeA-1GU",
@@ -24,12 +32,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const twitterProvider = new TwitterAuthProvider();
+const db = getFirestore(app);
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     textLoginStatus.innerText = `${user.uid}でログイン中。`;
+
+    const userProfileDocRef = getUserProfileDocRef(db, user.uid);
+    const userProfileDoc = await getDocFromServer(userProfileDocRef);
+    const userProfile = userProfileDoc.data();
+    setUserProfileToForm(formProfile, userProfile);
+
+    fieldsetProfile.disabled = false;
   } else {
     textLoginStatus.innerText = "ログインしていません。";
+
+    clearUserProfileForm(formProfile);
+
+    fieldsetProfile.disabled = true;
   }
 });
 
@@ -47,3 +67,50 @@ buttonLogin.addEventListener("click", async () => {
 buttonLogout.addEventListener("click", () => {
   signOut(auth);
 });
+
+formProfile.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  // TODO: validate
+  // TODO: 更新日時の管理
+  const userProfile = getUserProfileFromForm(formProfile);
+  const userProfileDocRef = getUserProfileDocRef(db, auth.currentUser.uid);
+  await setDoc(userProfileDocRef, userProfile, { merge: true });
+
+  alert("更新完了");
+});
+
+function getUserProfileFromForm(form) {
+  const userName = form.elements["userName"].value.trim();
+  const djName = form.elements["djName"].value.trim();
+  const iidxId = form.elements["iidxId"].value.trim();
+  const csv = form.elements["csv"].value.trim();
+  return { userName, djName, iidxId, csv };
+}
+
+function setUserProfileToForm(form, userProfile) {
+  if (userProfile == null) {
+    userProfile = makeEmptyUserProfile();
+  }
+  form.elements["userName"].value = userProfile.userName;
+  form.elements["djName"].value = userProfile.djName;
+  form.elements["iidxId"].value = userProfile.iidxId;
+  form.elements["csv"].value = userProfile.csv;
+}
+
+function clearUserProfileForm(form) {
+  setUserProfileToForm(form, makeEmptyUserProfile());
+}
+
+function getUserProfileDocRef(db, userId) {
+  return doc(db, "userProfiles", userId);
+}
+
+function makeEmptyUserProfile() {
+  return {
+    userName: "",
+    djName: "",
+    iidxId: "",
+    csv: "",
+  };
+}
