@@ -25,12 +25,12 @@ const checkAgree = document.getElementById("checkAgree");
 const buttonAgree = document.getElementById("buttonAgree");
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAm4Yb7EfBoXXgtp-rilAkjy7XxeeA-1GU",
-  authDomain: "iidx-csv-comparator.firebaseapp.com",
-  projectId: "iidx-csv-comparator",
-  storageBucket: "iidx-csv-comparator.firebasestorage.app",
-  messagingSenderId: "118248646396",
-  appId: "1:118248646396:web:3081651fe9fa33c62ed979",
+  apiKey: "AIzaSyArJqsfRgtG3Fj0q2ZqBSdqpxwkzCbffMM",
+  authDomain: "iidx-playdata-comparator.firebaseapp.com",
+  projectId: "iidx-playdata-comparator",
+  storageBucket: "iidx-playdata-comparator.firebasestorage.app",
+  messagingSenderId: "185685035183",
+  appId: "1:185685035183:web:d39ec9abdfb6f39096ac5a",
 };
 
 const app = initializeApp(firebaseConfig);
