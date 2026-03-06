@@ -12,8 +12,9 @@ import {
   getDocFromServer,
   getFirestore,
   serverTimestamp,
-  setDoc,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+import { upsertDocWithTs } from "../shared/firestore_util.js";
 
 const areaMain = document.getElementById("areaMain");
 const textLoginStatus = document.getElementById("textLoginStatus");
@@ -63,10 +64,9 @@ formProfile.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   // TODO: validate
-  // TODO: 更新日時の管理
   const userProfile = getUserProfileFromForm(formProfile);
   const userProfileDocRef = getUserProfileDocRef(db, auth.currentUser.uid);
-  await setDoc(userProfileDocRef, userProfile, { merge: true });
+  await upsertDocWithTs(userProfileDocRef, userProfile);
 
   alert("更新完了");
 });
@@ -77,7 +77,7 @@ checkAgree.addEventListener("change", (event) => {
 
 buttonAgree.addEventListener("click", async (event) => {
   const userDocRef = getUserDocRef(db, auth.currentUser.uid);
-  await setDoc(userDocRef, { agreeAt: serverTimestamp() }, { merge: true });
+  await upsertDocWithTs(userDocRef, { agreeAt: serverTimestamp() });
 
   const userStatus = await getUserStatus(auth.currentUser);
   await renderForUserStatus(userStatus);
