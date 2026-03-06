@@ -85,27 +85,30 @@ buttonAgree.addEventListener("click", async (event) => {
 
 async function getUserStatus(authUser) {
   if (authUser == null) {
-    return { status: "NotLoggedIn", isLoggedIn: false };
+    return { status: "NotLoggedIn", userInfo: null };
   }
 
   const uid = authUser.uid;
+
   const userDocRef = getUserDocRef(db, uid);
   const userDoc = await getDocFromServer(userDocRef);
   const user = userDoc.data();
-  if (user == null || user.agreeAt == null) {
-    return { status: "NotAgreed", isLoggedIn: true, uid };
-  }
 
-  return { status: "Agreed", isLoggedIn: true, uid };
+  const userInfo = { uid };
+
+  if (user == null || user.agreeAt == null) {
+    return { status: "NotAgreed", userInfo };
+  }
+  return { status: "Agreed", userInfo };
 }
 
 async function renderForUserStatus(userStatus) {
-  if (userStatus.isLoggedIn) {
-    const { uid } = userStatus;
+  if (userStatus.userInfo == null) {
+    textLoginStatus.innerText = "ログインしていません。";
+  } else {
+    const { uid } = userStatus.userInfo;
 
     textLoginStatus.innerText = `${uid}でログイン中。`;
-  } else {
-    textLoginStatus.innerText = "ログインしていません。";
   }
 
   switch (userStatus.status) {
@@ -121,7 +124,9 @@ async function renderForUserStatus(userStatus) {
 
     case "Agreed":
       {
-        const { uid } = userStatus;
+        const {
+          userInfo: { uid },
+        } = userStatus;
 
         areaConsent.style.display = "none";
 
