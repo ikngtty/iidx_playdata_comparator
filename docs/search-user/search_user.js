@@ -30,6 +30,9 @@ buttonSearch.addEventListener("click", async () => {
     row.insertCell().textContent = userProfile.userName;
     row.insertCell().textContent = userProfile.djName;
     row.insertCell().textContent = userProfile.iidxId;
+    row.insertCell().textContent = userProfile.updatedAt
+      .toDate()
+      .toLocaleString();
     const buttonsToCompareCell = row.insertCell();
     [
       ["SP", userProfile.playdataSp],
