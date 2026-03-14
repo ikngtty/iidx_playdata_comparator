@@ -58,6 +58,21 @@ const inputsCsv = [1, 2].map((i) => document.getElementById(`inputCsv${i}`));
 const buttonCompare = document.getElementById("buttonCompare");
 const tableComparison = document.getElementById("tableComparison");
 
+{
+  inputsCsv.forEach((inputCsv, i) => {
+    const savedValue = localStorage.getItem(`iidxComparator.csv${i + 1}`);
+    if (savedValue != null) {
+      inputCsv.value = savedValue;
+    }
+  });
+}
+
+inputsCsv.forEach((inputCsv, i) => {
+  inputCsv.addEventListener("input", () => {
+    localStorage.setItem(`iidxComparator.csv${i + 1}`, inputCsv.value);
+  });
+});
+
 buttonCompare.addEventListener("click", () => {
   const tbody = tableComparison.tBodies[0];
 
