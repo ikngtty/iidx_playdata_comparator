@@ -192,6 +192,7 @@ async function renderForUserStatus(userStatus) {
         areaConsent.style.display = "none";
 
         fieldsetProfile.disabled = false;
+        // TODO: 取得に失敗したら更新ボタン押せなくする（空白データで上書き更新する事故の防止）
         {
           const userProfileDocRef = getUserProfileDocRef(db, uid);
           const userProfileDoc = await getDocFromServer(userProfileDocRef);
