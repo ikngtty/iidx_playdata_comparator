@@ -1,13 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import {
   collection,
-  doc,
   getDocFromServer,
   getDocsFromServer,
   getFirestore,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 import { CONFIG as FIREBASE_CONFIG } from "../shared/firebase_util.js";
+import { getPlaydataDocRef } from "../shared/repository.js";
 
 const buttonSearch = document.getElementById("buttonSearch");
 const tableUsers = document.getElementById("tableUsers");
@@ -64,8 +64,3 @@ buttonSearch.addEventListener("click", async () => {
     });
   });
 });
-
-// TODO: 共通化
-function getPlaydataDocRef(db, userId, playside) {
-  return doc(db, "playdata", `${userId}:${playside}`);
-}

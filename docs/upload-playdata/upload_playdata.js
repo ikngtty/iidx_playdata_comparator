@@ -8,7 +8,6 @@ import {
   TwitterAuthProvider,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import {
-  doc,
   getDocFromServer,
   getFirestore,
   serverTimestamp,
@@ -23,6 +22,11 @@ import {
   RuleRequired,
 } from "../shared/validation/rules.js";
 import ValidatableField from "../shared/validation/validatable_field.js";
+import {
+  getUserDocRef,
+  getUserProfileDocRef,
+  getPlaydataDocRef,
+} from "../shared/repository.js";
 
 const areaMain = document.getElementById("areaMain");
 const textLoginStatus = document.getElementById("textLoginStatus");
@@ -271,18 +275,6 @@ function setDataToUserProfileForm(form, formData) {
 
 function clearUserProfileForm(form) {
   setDataToUserProfileForm(form, makeEmptyUserProfileFormData());
-}
-
-function getUserDocRef(db, userId) {
-  return doc(db, "users", userId);
-}
-
-function getUserProfileDocRef(db, userId) {
-  return doc(db, "userProfiles", userId);
-}
-
-function getPlaydataDocRef(db, userId, playside) {
-  return doc(db, "playdata", `${userId}:${playside}`);
 }
 
 function makeEmptyUserProfileFormData() {
