@@ -42,25 +42,32 @@ buttonSearch.addEventListener("click", async () => {
       ["sp", "SP"],
       ["dp", "DP"],
     ].forEach(([playside, playsideLabel]) => {
-      [1, 2].forEach((iPlayer) => {
+      [1, 2].forEach((playerIndex) => {
         const button = document.createElement("button");
-        button.textContent = `${playsideLabel}のデータをPlayer${iPlayer}にセット`;
-        button.addEventListener("click", async () => {
-          const playdataDocRef = getPlaydataDocRef(db, userId, playside);
-          const playdataDoc = await getDocFromServer(playdataDocRef);
-          // TODO: データがない時はそもそも押せなくする
-          if (!playdataDoc.exists()) {
-            alert("データがありません。");
-            return;
-          }
-          const playdata = playdataDoc.data().data;
-
-          localStorage.setItem(`iidxComparator.csv${iPlayer}`, playdata);
-          location.href = "../compare-playdata/";
-        });
+        button.textContent = `${playsideLabel}のデータをPlayer${playerIndex}にセット`;
+        button.dataset.userId = userId;
+        button.dataset.playside = playside;
+        button.dataset.playerIndex = playerIndex;
+        button.addEventListener("click", handleButtonCompareClick);
         buttonsToCompareCell.appendChild(button);
       });
       buttonsToCompareCell.appendChild(document.createElement("br"));
     });
   });
 });
+
+async function handleButtonCompareClick(event) {
+  const { userId, playside, playerIndex } = event.currentTarget.dataset;
+
+  const playdataDocRef = getPlaydataDocRef(db, userId, playside);
+  const playdataDoc = await getDocFromServer(playdataDocRef);
+  // TODO: データがない時はそもそも押せなくする
+  if (!playdataDoc.exists()) {
+    alert("データがありません。");
+    return;
+  }
+  const playdata = playdataDoc.data().data;
+
+  localStorage.setItem(`iidxComparator.csv${playerIndex}`, playdata);
+  location.href = "../compare-playdata/";
+}
