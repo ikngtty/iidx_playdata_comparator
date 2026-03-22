@@ -8,6 +8,7 @@ import {
   TwitterAuthProvider,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import {
+  deleteDoc,
   getDocFromServer,
   getFirestore,
   serverTimestamp,
@@ -46,17 +47,24 @@ const profileTextIidxId = document.getElementById("profileTextIidxId");
 const profileWarningCaptionIidxId = document.getElementById(
   "profileWarningCaptionIidxId",
 );
+const buttonDeleteProfile = document.getElementById("buttonDeleteProfile");
 const formPlaydataSp = document.getElementById("formPlaydataSp");
 const fieldsetPlaydataSp = document.getElementById("fieldsetPlaydataSp");
 const textPlaydataSp = document.getElementById("textPlaydataSp");
 const warningCaptionPlaydataSp = document.getElementById(
   "warningCaptionPlaydataSp",
 );
+const buttonDeletePlaydataSp = document.getElementById(
+  "buttonDeletePlaydataSp",
+);
 const formPlaydataDp = document.getElementById("formPlaydataDp");
 const fieldsetPlaydataDp = document.getElementById("fieldsetPlaydataDp");
 const textPlaydataDp = document.getElementById("textPlaydataDp");
 const warningCaptionPlaydataDp = document.getElementById(
   "warningCaptionPlaydataDp",
+);
+const buttonDeletePlaydataDp = document.getElementById(
+  "buttonDeletePlaydataDp",
 );
 const areaConsent = document.getElementById("areaConsent");
 const checkAgree = document.getElementById("checkAgree");
@@ -171,6 +179,51 @@ formPlaydataDp.addEventListener("submit", async (event) => {
   await upsertDocWithTs(playdataDpDocRef, playdataDp);
 
   alert("更新完了");
+});
+
+// TODO: データ無くても削除できちゃう。
+buttonDeleteProfile.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  if (!confirm("プロフィールを削除しますか？")) return;
+
+  const userProfileDocRef = getUserProfileDocRef(db, auth.currentUser.uid);
+  // NOTE: awaitしない方が良いらしい。
+  deleteDoc(userProfileDocRef);
+
+  clearFormUserProfile();
+
+  alert("プロフィールを削除しました。");
+});
+
+// TODO: データ無くても削除できちゃう。
+buttonDeletePlaydataSp.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  if (!confirm("プレーデータ（SP）を削除しますか？")) return;
+
+  const playdataSpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "sp");
+  // NOTE: awaitしない方が良いらしい。
+  deleteDoc(playdataSpDocRef);
+
+  clearFormPlaydataSp();
+
+  alert("プレーデータ（SP）を削除しました。");
+});
+
+// TODO: データ無くても削除できちゃう。
+buttonDeletePlaydataDp.addEventListener("click", (event) => {
+  event.preventDefault();
+
+  if (!confirm("プレーデータ（DP）を削除しますか？")) return;
+
+  const playdataDpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "dp");
+  // NOTE: awaitしない方が良いらしい。
+  deleteDoc(playdataDpDocRef);
+
+  clearFormPlaydataDp();
+
+  alert("プレーデータ（DP）を削除しました。");
 });
 
 checkAgree.addEventListener("change", (event) => {
