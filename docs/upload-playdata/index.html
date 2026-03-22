@@ -24,10 +24,22 @@
           <span id="profileWarningCaptionDjName" class="warningCaption"></span><br>
           IIDX ID (数字のみ8桁): <input type="text" name="iidxId" id="profileTextIidxId" inputmode="numeric">
           <span id="profileWarningCaptionIidxId" class="warningCaption"></span><br>
-          プレーデータCSV（SP）: <textarea name="playdataSp" id="profileTextPlaydataSp"></textarea>
-          <span id="profileWarningCaptionPlaydataSp" class="warningCaption"></span><br>
-          プレーデータCSV（DP）: <textarea name="playdataDp" id="profileTextPlaydataDp"></textarea>
-          <span id="profileWarningCaptionPlaydataDp" class="warningCaption"></span><br>
+          <input type="submit" value="更新">
+        </fieldset>
+      </form>
+
+      <form id="formPlaydataSp">
+        <fieldset id="fieldsetPlaydataSp" disabled>
+          プレーデータCSV（SP）: <textarea name="playdataSp" id="textPlaydataSp"></textarea>
+          <span id="warningCaptionPlaydataSp" class="warningCaption"></span><br>
+          <input type="submit" value="更新">
+        </fieldset>
+      </form>
+
+      <form id="formPlaydataDp">
+        <fieldset id="fieldsetPlaydataDp" disabled>
+          プレーデータCSV（DP）: <textarea name="playdataDp" id="textPlaydataDp"></textarea>
+          <span id="warningCaptionPlaydataDp" class="warningCaption"></span><br>
           <input type="submit" value="更新">
         </fieldset>
       </form>

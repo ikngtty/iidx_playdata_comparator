@@ -46,17 +46,23 @@ const profileTextIidxId = document.getElementById("profileTextIidxId");
 const profileWarningCaptionIidxId = document.getElementById(
   "profileWarningCaptionIidxId",
 );
-const profileTextPlaydataSp = document.getElementById("profileTextPlaydataSp");
-const profileWarningCaptionPlaydataSp = document.getElementById(
-  "profileWarningCaptionPlaydataSp",
+const formPlaydataSp = document.getElementById("formPlaydataSp");
+const fieldsetPlaydataSp = document.getElementById("fieldsetPlaydataSp");
+const textPlaydataSp = document.getElementById("textPlaydataSp");
+const warningCaptionPlaydataSp = document.getElementById(
+  "warningCaptionPlaydataSp",
 );
-const profileTextPlaydataDp = document.getElementById("profileTextPlaydataDp");
-const profileWarningCaptionPlaydataDp = document.getElementById(
-  "profileWarningCaptionPlaydataDp",
+const formPlaydataDp = document.getElementById("formPlaydataDp");
+const fieldsetPlaydataDp = document.getElementById("fieldsetPlaydataDp");
+const textPlaydataDp = document.getElementById("textPlaydataDp");
+const warningCaptionPlaydataDp = document.getElementById(
+  "warningCaptionPlaydataDp",
 );
 const areaConsent = document.getElementById("areaConsent");
 const checkAgree = document.getElementById("checkAgree");
 const buttonAgree = document.getElementById("buttonAgree");
+
+const allFields = [fieldsetProfile, fieldsetPlaydataSp, fieldsetPlaydataDp];
 
 const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -78,23 +84,21 @@ const validatableProfileIidxId = new ValidatableField(
   profileWarningCaptionIidxId,
   [new RuleNumeric(), new RuleJustLength(8)],
 );
-const validatableProfilePlaydataSp = new ValidatableField(
-  profileTextPlaydataSp,
-  profileWarningCaptionPlaydataSp,
-  [new RuleMaxLength(1000000)],
-);
-const validatableProfilePlaydataDp = new ValidatableField(
-  profileTextPlaydataDp,
-  profileWarningCaptionPlaydataDp,
-  [new RuleMaxLength(1000000)],
-);
 const validatableProfileFields = [
   validatableProfileUserName,
   validatableProfileDjName,
   validatableProfileIidxId,
-  validatableProfilePlaydataSp,
-  validatableProfilePlaydataDp,
 ];
+const validatablePlaydataSp = new ValidatableField(
+  textPlaydataSp,
+  warningCaptionPlaydataSp,
+  [new RuleMaxLength(500000)],
+);
+const validatablePlaydataDp = new ValidatableField(
+  textPlaydataDp,
+  warningCaptionPlaydataDp,
+  [new RuleMaxLength(500000)],
+);
 
 onAuthStateChanged(auth, async (authUser) => {
   const userStatus = await getUserStatus(authUser);
@@ -114,8 +118,6 @@ buttonLogout.addEventListener("click", () => {
   signOut(auth);
 });
 
-// TODO: プロフィールの登録とCSVのアップロードは別々にしたい。
-// （明らかに更新するタイミングの違うデータなので。）
 formProfile.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -130,14 +132,41 @@ formProfile.addEventListener("submit", async (event) => {
     return;
   }
 
-  const { userProfile, playdataSp, playdataDp } =
-    getDataFromUserProfileForm(formProfile);
-  // TODO: 登録が一部だけ成功すると画面の状態が意味不明になる
+  const userProfile = getDataFromFormUserProfile();
   const userProfileDocRef = getUserProfileDocRef(db, auth.currentUser.uid);
   await upsertDocWithTs(userProfileDocRef, userProfile);
+
+  alert("更新完了");
+});
+
+formPlaydataSp.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  // バリデーションチェック
+  validatablePlaydataSp.clearWarning();
+  if (validatablePlaydataSp.warnIfInvalid()) {
+    return;
+  }
+
   // TODO: テキストが空ならデータを削除したい
+  const playdataSp = getDataFromFormPlaydataSp();
   const playdataSpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "sp");
   await upsertDocWithTs(playdataSpDocRef, playdataSp);
+
+  alert("更新完了");
+});
+
+formPlaydataDp.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  // バリデーションチェック
+  validatablePlaydataDp.clearWarning();
+  if (validatablePlaydataDp.warnIfInvalid()) {
+    return;
+  }
+
+  // TODO: テキストが空ならデータを削除したい
+  const playdataDp = getDataFromFormPlaydataDp();
   const playdataDpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "dp");
   await upsertDocWithTs(playdataDpDocRef, playdataDp);
 
@@ -190,8 +219,8 @@ async function renderForUserStatus(userStatus) {
       {
         areaConsent.style.display = "none";
 
-        fieldsetProfile.disabled = true;
-        clearUserProfileForm(formProfile);
+        allFields.forEach((field) => (field.disabled = true));
+        clearAllForms();
         areaMain.style.display = "block";
       }
       break;
@@ -204,27 +233,26 @@ async function renderForUserStatus(userStatus) {
 
         areaConsent.style.display = "none";
 
-        fieldsetProfile.disabled = false;
+        allFields.forEach((field) => (field.disabled = false));
         // TODO: 取得に失敗したら更新ボタン押せなくする（空白データで上書き更新する事故の防止）
         // TODO: いちいちawaitしないでまとめてawaitしたい。
         {
           const userProfileDocRef = getUserProfileDocRef(db, uid);
           const userProfileDoc = await getDocFromServer(userProfileDocRef);
-          const userProfile = userProfileDoc.data();
-
+          const userProfile = userProfileDoc.data() ?? makeEmptyUserProfile();
+          setDataToFormUserProfile(userProfile);
+        }
+        {
           const playdataSpDocRef = getPlaydataDocRef(db, uid, "sp");
           const playdataSpDoc = await getDocFromServer(playdataSpDocRef);
-          const playdataSp = playdataSpDoc.data();
-
+          const playdataSp = playdataSpDoc.data() ?? makeEmptyPlaydataSp();
+          setDataToFormPlaydataSp(playdataSp);
+        }
+        {
           const playdataDpDocRef = getPlaydataDocRef(db, uid, "dp");
           const playdataDpDoc = await getDocFromServer(playdataDpDocRef);
-          const playdataDp = playdataDpDoc.data();
-
-          setDataToUserProfileForm(formProfile, {
-            userProfile,
-            playdataSp,
-            playdataDp,
-          });
+          const playdataDp = playdataDpDoc.data() ?? makeEmptyPlaydataDp();
+          setDataToFormPlaydataDp(playdataDp);
         }
         areaMain.style.display = "block";
       }
@@ -245,46 +273,63 @@ async function renderForUserStatus(userStatus) {
   }
 }
 
-function getDataFromUserProfileForm(form) {
-  const userName = form.elements["userName"].value.trim();
-  const djName = form.elements["djName"].value.trim();
-  const iidxId = form.elements["iidxId"].value.trim();
-  const playdataSp = form.elements["playdataSp"].value.trim();
-  const playdataDp = form.elements["playdataDp"].value.trim();
-  return {
-    userProfile: { userName, djName, iidxId },
-    playdataSp: { data: playdataSp },
-    playdataDp: { data: playdataDp },
-  };
+function getDataFromFormUserProfile() {
+  const userName = formProfile.elements["userName"].value.trim();
+  const djName = formProfile.elements["djName"].value.trim();
+  const iidxId = formProfile.elements["iidxId"].value.trim();
+  return { userName, djName, iidxId };
 }
 
-function setDataToUserProfileForm(form, formData) {
-  const empty = makeEmptyUserProfileFormData();
-  const {
-    userProfile = empty.userProfile,
-    playdataSp = empty.playdataSp,
-    playdataDp = empty.playdataDp,
-  } = formData;
-
-  form.elements["userName"].value = userProfile.userName;
-  form.elements["djName"].value = userProfile.djName;
-  form.elements["iidxId"].value = userProfile.iidxId;
-  form.elements["playdataSp"].value = playdataSp.data;
-  form.elements["playdataDp"].value = playdataDp.data;
+function setDataToFormUserProfile(userProfile) {
+  formProfile.elements["userName"].value = userProfile.userName;
+  formProfile.elements["djName"].value = userProfile.djName;
+  formProfile.elements["iidxId"].value = userProfile.iidxId;
 }
 
-function clearUserProfileForm(form) {
-  setDataToUserProfileForm(form, makeEmptyUserProfileFormData());
+function getDataFromFormPlaydataSp() {
+  const data = formPlaydataSp.elements["playdataSp"].value.trim();
+  return { data };
 }
 
-function makeEmptyUserProfileFormData() {
-  return {
-    userProfile: {
-      userName: "",
-      djName: "",
-      iidxId: "",
-    },
-    playdataSp: { data: "" },
-    playdataDp: { data: "" },
-  };
+function setDataToFormPlaydataSp(playdataSp) {
+  formPlaydataSp.elements["playdataSp"].value = playdataSp.data;
+}
+
+function getDataFromFormPlaydataDp() {
+  const data = formPlaydataDp.elements["playdataDp"].value.trim();
+  return { data };
+}
+
+function setDataToFormPlaydataDp(playdataDp) {
+  formPlaydataDp.elements["playdataDp"].value = playdataDp.data;
+}
+
+function clearAllForms() {
+  clearFormUserProfile();
+  clearFormPlaydataSp();
+  clearFormPlaydataDp();
+}
+
+function clearFormUserProfile() {
+  setDataToFormUserProfile(makeEmptyUserProfile());
+}
+
+function clearFormPlaydataSp() {
+  setDataToFormPlaydataSp(makeEmptyPlaydataSp());
+}
+
+function clearFormPlaydataDp() {
+  setDataToFormPlaydataDp(makeEmptyPlaydataDp());
+}
+
+function makeEmptyUserProfile() {
+  return { userName: "", djName: "", iidxId: "" };
+}
+
+function makeEmptyPlaydataSp() {
+  return { data: "" };
+}
+
+function makeEmptyPlaydataDp() {
+  return { data: "" };
 }
