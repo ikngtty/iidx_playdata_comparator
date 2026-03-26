@@ -161,7 +161,6 @@ formPlaydataSp.addEventListener("submit", async (event) => {
     return;
   }
 
-  // TODO: テキストが空ならデータを削除したい
   const playdataSp = getDataFromFormPlaydataSp();
   const playdataSpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "sp");
   await upsertDocWithTs(playdataSpDocRef, playdataSp);
@@ -180,7 +179,6 @@ formPlaydataDp.addEventListener("submit", async (event) => {
     return;
   }
 
-  // TODO: テキストが空ならデータを削除したい
   const playdataDp = getDataFromFormPlaydataDp();
   const playdataDpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "dp");
   await upsertDocWithTs(playdataDpDocRef, playdataDp);
