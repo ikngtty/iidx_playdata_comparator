@@ -47,6 +47,7 @@ const profileTextIidxId = document.getElementById("profileTextIidxId");
 const profileWarningCaptionIidxId = document.getElementById(
   "profileWarningCaptionIidxId",
 );
+const submitProfile = document.getElementById("submitProfile");
 const buttonDeleteProfile = document.getElementById("buttonDeleteProfile");
 const formPlaydataSp = document.getElementById("formPlaydataSp");
 const fieldsetPlaydataSp = document.getElementById("fieldsetPlaydataSp");
@@ -54,6 +55,7 @@ const textPlaydataSp = document.getElementById("textPlaydataSp");
 const warningCaptionPlaydataSp = document.getElementById(
   "warningCaptionPlaydataSp",
 );
+const submitPlaydataSp = document.getElementById("submitPlaydataSp");
 const buttonDeletePlaydataSp = document.getElementById(
   "buttonDeletePlaydataSp",
 );
@@ -63,6 +65,7 @@ const textPlaydataDp = document.getElementById("textPlaydataDp");
 const warningCaptionPlaydataDp = document.getElementById(
   "warningCaptionPlaydataDp",
 );
+const submitPlaydataDp = document.getElementById("submitPlaydataDp");
 const buttonDeletePlaydataDp = document.getElementById(
   "buttonDeletePlaydataDp",
 );
@@ -144,6 +147,8 @@ formProfile.addEventListener("submit", async (event) => {
   const userProfileDocRef = getUserProfileDocRef(db, auth.currentUser.uid);
   await upsertDocWithTs(userProfileDocRef, userProfile);
 
+  renderForUserProfile(userProfile);
+
   alert("更新完了");
 });
 
@@ -160,6 +165,8 @@ formPlaydataSp.addEventListener("submit", async (event) => {
   const playdataSp = getDataFromFormPlaydataSp();
   const playdataSpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "sp");
   await upsertDocWithTs(playdataSpDocRef, playdataSp);
+
+  renderForPlaydataSp(playdataSp);
 
   alert("更新完了");
 });
@@ -178,10 +185,11 @@ formPlaydataDp.addEventListener("submit", async (event) => {
   const playdataDpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "dp");
   await upsertDocWithTs(playdataDpDocRef, playdataDp);
 
+  renderForPlaydataDp(playdataDp);
+
   alert("更新完了");
 });
 
-// TODO: データ無くても削除できちゃう。
 buttonDeleteProfile.addEventListener("click", (event) => {
   event.preventDefault();
 
@@ -191,12 +199,11 @@ buttonDeleteProfile.addEventListener("click", (event) => {
   // NOTE: awaitしない方が良いらしい。
   deleteDoc(userProfileDocRef);
 
-  clearFormUserProfile();
+  renderForUserProfile(null);
 
   alert("プロフィールを削除しました。");
 });
 
-// TODO: データ無くても削除できちゃう。
 buttonDeletePlaydataSp.addEventListener("click", (event) => {
   event.preventDefault();
 
@@ -206,12 +213,11 @@ buttonDeletePlaydataSp.addEventListener("click", (event) => {
   // NOTE: awaitしない方が良いらしい。
   deleteDoc(playdataSpDocRef);
 
-  clearFormPlaydataSp();
+  renderForPlaydataSp(null);
 
   alert("プレーデータ（SP）を削除しました。");
 });
 
-// TODO: データ無くても削除できちゃう。
 buttonDeletePlaydataDp.addEventListener("click", (event) => {
   event.preventDefault();
 
@@ -221,7 +227,7 @@ buttonDeletePlaydataDp.addEventListener("click", (event) => {
   // NOTE: awaitしない方が良いらしい。
   deleteDoc(playdataDpDocRef);
 
-  clearFormPlaydataDp();
+  renderForPlaydataDp(null);
 
   alert("プレーデータ（DP）を削除しました。");
 });
@@ -292,20 +298,20 @@ async function renderForUserStatus(userStatus) {
         {
           const userProfileDocRef = getUserProfileDocRef(db, uid);
           const userProfileDoc = await getDocFromServer(userProfileDocRef);
-          const userProfile = userProfileDoc.data() ?? makeEmptyUserProfile();
-          setDataToFormUserProfile(userProfile);
+          const userProfile = userProfileDoc.data();
+          renderForUserProfile(userProfile);
         }
         {
           const playdataSpDocRef = getPlaydataDocRef(db, uid, "sp");
           const playdataSpDoc = await getDocFromServer(playdataSpDocRef);
-          const playdataSp = playdataSpDoc.data() ?? makeEmptyPlaydataSp();
-          setDataToFormPlaydataSp(playdataSp);
+          const playdataSp = playdataSpDoc.data();
+          renderForPlaydataSp(playdataSp);
         }
         {
           const playdataDpDocRef = getPlaydataDocRef(db, uid, "dp");
           const playdataDpDoc = await getDocFromServer(playdataDpDocRef);
-          const playdataDp = playdataDpDoc.data() ?? makeEmptyPlaydataDp();
-          setDataToFormPlaydataDp(playdataDp);
+          const playdataDp = playdataDpDoc.data();
+          renderForPlaydataDp(playdataDp);
         }
         areaMain.style.display = "block";
       }
@@ -324,6 +330,39 @@ async function renderForUserStatus(userStatus) {
     default:
       throw new Error(`unexpected user status: ${userStatus}`);
   }
+}
+
+function renderForUserProfile(userProfile) {
+  if (userProfile == null) {
+    submitProfile.value = "登録";
+    buttonDeleteProfile.disabled = true;
+  } else {
+    submitProfile.value = "更新";
+    buttonDeleteProfile.disabled = false;
+  }
+  setDataToFormUserProfile(userProfile ?? makeEmptyUserProfile());
+}
+
+function renderForPlaydataSp(playdataSp) {
+  if (playdataSp == null) {
+    submitPlaydataSp.value = "登録";
+    buttonDeletePlaydataSp.disabled = true;
+  } else {
+    submitPlaydataSp.value = "更新";
+    buttonDeletePlaydataSp.disabled = false;
+  }
+  setDataToFormPlaydataSp(playdataSp ?? makeEmptyPlaydataSp());
+}
+
+function renderForPlaydataDp(playdataDp) {
+  if (playdataDp == null) {
+    submitPlaydataDp.value = "登録";
+    buttonDeletePlaydataDp.disabled = true;
+  } else {
+    submitPlaydataDp.value = "更新";
+    buttonDeletePlaydataDp.disabled = false;
+  }
+  setDataToFormPlaydataDp(playdataDp ?? makeEmptyPlaydataDp());
 }
 
 function getDataFromFormUserProfile() {
