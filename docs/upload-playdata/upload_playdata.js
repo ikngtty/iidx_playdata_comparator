@@ -309,13 +309,18 @@ async function renderForUserStatus(userStatus) {
 
 function renderForUserProfile(userProfile) {
   if (userProfile == null) {
+    clearAllForms();
     submitProfile.value = "登録";
     buttonDeleteProfile.disabled = true;
+    fieldsetPlaydataSp.disabled = true;
+    fieldsetPlaydataDp.disabled = true;
   } else {
+    setDataToFormUserProfile(userProfile);
     submitProfile.value = "更新";
     buttonDeleteProfile.disabled = false;
+    fieldsetPlaydataSp.disabled = false;
+    fieldsetPlaydataDp.disabled = false;
   }
-  setDataToFormUserProfile(userProfile ?? makeEmptyUserProfile());
 }
 
 function getDataFromFormUserProfile() {
