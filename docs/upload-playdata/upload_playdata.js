@@ -200,7 +200,7 @@ formPlaydataDp.addEventListener("submit", async (event) => {
   alert("アップロード完了");
 });
 
-buttonDeleteProfile.addEventListener("click", (event) => {
+buttonDeleteProfile.addEventListener("click", async (event) => {
   event.preventDefault();
 
   if (!confirm("プロフィールを削除しますか？")) return;
@@ -209,7 +209,7 @@ buttonDeleteProfile.addEventListener("click", (event) => {
   const userProfileDocRef = getUserProfileDocRef(db, uid);
   const playdataSpDocRef = getPlaydataDocRef(db, uid, "sp");
   const playdataDpDocRef = getPlaydataDocRef(db, uid, "dp");
-  runTransaction(db, async (tx) => {
+  await runTransaction(db, async (tx) => {
     // WARNING: deleteはawaitしない方がいいってドキュメントにはある。
     await tx.delete(userProfileDocRef);
     await tx.delete(playdataSpDocRef);
@@ -221,7 +221,7 @@ buttonDeleteProfile.addEventListener("click", (event) => {
   alert("プロフィールを削除しました。");
 });
 
-buttonDeletePlaydataSp.addEventListener("click", (event) => {
+buttonDeletePlaydataSp.addEventListener("click", async (event) => {
   event.preventDefault();
 
   if (!confirm("プレーデータ（SP）を削除しますか？")) return;
@@ -229,7 +229,7 @@ buttonDeletePlaydataSp.addEventListener("click", (event) => {
   const uid = auth.currentUser.uid;
   const playdataSpDocRef = getPlaydataDocRef(db, uid, "sp");
   const userProfileDocRef = getUserProfileDocRef(db, uid);
-  runTransaction(db, async (tx) => {
+  await runTransaction(db, async (tx) => {
     // WARNING: deleteはawaitしない方がいいってドキュメントにはある。
     await tx.delete(playdataSpDocRef);
     await updateDocWithTsTx(tx, userProfileDocRef, {
@@ -240,7 +240,7 @@ buttonDeletePlaydataSp.addEventListener("click", (event) => {
   alert("プレーデータ（SP）を削除しました。");
 });
 
-buttonDeletePlaydataDp.addEventListener("click", (event) => {
+buttonDeletePlaydataDp.addEventListener("click", async (event) => {
   event.preventDefault();
 
   if (!confirm("プレーデータ（DP）を削除しますか？")) return;
@@ -248,7 +248,7 @@ buttonDeletePlaydataDp.addEventListener("click", (event) => {
   const uid = auth.currentUser.uid;
   const playdataDpDocRef = getPlaydataDocRef(db, uid, "dp");
   const userProfileDocRef = getUserProfileDocRef(db, uid);
-  runTransaction(db, async (tx) => {
+  await runTransaction(db, async (tx) => {
     // WARNING: deleteはawaitしない方がいいってドキュメントにはある。
     await tx.delete(playdataDpDocRef);
     await updateDocWithTsTx(tx, userProfileDocRef, {
