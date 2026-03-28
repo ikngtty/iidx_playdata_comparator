@@ -30,6 +30,7 @@ import ValidatableField from "../shared/validation/validatable_field.js";
 import {
   getUserDocRef,
   getUserProfileDocRef,
+  getUserProfileFromServer,
   getPlaydataDocRef,
 } from "../shared/repository.js";
 
@@ -145,10 +146,11 @@ formProfile.addEventListener("submit", async (event) => {
     return;
   }
 
-  const userProfile = getDataFromFormUserProfile();
+  let userProfile = getDataFromFormUserProfile();
   const userProfileDocRef = getUserProfileDocRef(db, auth.currentUser.uid);
   await upsertDocWithTs(userProfileDocRef, userProfile);
 
+  userProfile = await getUserProfileFromServer(db, auth.currentUser.uid);
   renderForUserProfile(userProfile);
 
   alert("更新完了");
@@ -216,7 +218,8 @@ buttonDeleteProfile.addEventListener("click", async (event) => {
     await tx.delete(playdataDpDocRef);
   });
 
-  renderForUserProfile(null);
+  const userProfile = await getUserProfileFromServer(db, uid);
+  renderForUserProfile(userProfile);
 
   alert("プロフィールを削除しました。");
 });
@@ -321,12 +324,9 @@ async function renderForUserStatus(userStatus) {
 
         allFields.forEach((field) => (field.disabled = false));
         // TODO: 取得に失敗したら更新ボタン押せなくする（空白データで上書き更新する事故の防止）
-        {
-          const userProfileDocRef = getUserProfileDocRef(db, uid);
-          const userProfileDoc = await getDocFromServer(userProfileDocRef);
-          const userProfile = userProfileDoc.data();
-          renderForUserProfile(userProfile);
-        }
+        const userProfile = await getUserProfileFromServer(db, uid);
+        renderForUserProfile(userProfile);
+
         areaMain.style.display = "block";
       }
       break;
