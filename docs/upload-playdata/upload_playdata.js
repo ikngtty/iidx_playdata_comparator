@@ -56,6 +56,9 @@ const submitProfile = document.getElementById("submitProfile");
 const buttonDeleteProfile = document.getElementById("buttonDeleteProfile");
 const formPlaydataSp = document.getElementById("formPlaydataSp");
 const fieldsetPlaydataSp = document.getElementById("fieldsetPlaydataSp");
+const spanPlaydataSpUploadedAt = document.getElementById(
+  "spanPlaydataSpUploadedAt",
+);
 const textPlaydataSp = document.getElementById("textPlaydataSp");
 const warningCaptionPlaydataSp = document.getElementById(
   "warningCaptionPlaydataSp",
@@ -65,6 +68,9 @@ const buttonDeletePlaydataSp = document.getElementById(
 );
 const formPlaydataDp = document.getElementById("formPlaydataDp");
 const fieldsetPlaydataDp = document.getElementById("fieldsetPlaydataDp");
+const spanPlaydataDpUploadedAt = document.getElementById(
+  "spanPlaydataDpUploadedAt",
+);
 const textPlaydataDp = document.getElementById("textPlaydataDp");
 const warningCaptionPlaydataDp = document.getElementById(
   "warningCaptionPlaydataDp",
@@ -176,6 +182,9 @@ formPlaydataSp.addEventListener("submit", async (event) => {
     });
   });
 
+  const userProfile = await getUserProfileFromServer(db, auth.currentUser.uid);
+  renderForUserProfile(userProfile);
+
   alert("アップロード完了");
 });
 
@@ -198,6 +207,9 @@ formPlaydataDp.addEventListener("submit", async (event) => {
       playdataDpUploadedAt: serverTimestamp(),
     });
   });
+
+  const userProfile = await getUserProfileFromServer(db, auth.currentUser.uid);
+  renderForUserProfile(userProfile);
 
   alert("アップロード完了");
 });
@@ -240,6 +252,9 @@ buttonDeletePlaydataSp.addEventListener("click", async (event) => {
     });
   });
 
+  const userProfile = await getUserProfileFromServer(db, uid);
+  renderForUserProfile(userProfile);
+
   alert("プレーデータ（SP）を削除しました。");
 });
 
@@ -258,6 +273,9 @@ buttonDeletePlaydataDp.addEventListener("click", async (event) => {
       playdataDpUploadedAt: null,
     });
   });
+
+  const userProfile = await getUserProfileFromServer(db, uid);
+  renderForUserProfile(userProfile);
 
   alert("プレーデータ（DP）を削除しました。");
 });
@@ -349,12 +367,18 @@ async function renderForUserStatus(userStatus) {
 function renderForUserProfile(userProfile) {
   if (userProfile == null) {
     clearAllForms();
+
     submitProfile.value = "登録";
     buttonDeleteProfile.disabled = true;
     fieldsetPlaydataSp.disabled = true;
     fieldsetPlaydataDp.disabled = true;
   } else {
     setDataToFormUserProfile(userProfile);
+    spanPlaydataSpUploadedAt.innerText =
+      userProfile.playdataSpUploadedAt?.toDate().toLocaleString() ?? "---";
+    spanPlaydataDpUploadedAt.innerText =
+      userProfile.playdataDpUploadedAt?.toDate().toLocaleString() ?? "---";
+
     submitProfile.value = "更新";
     buttonDeleteProfile.disabled = false;
     fieldsetPlaydataSp.disabled = false;
@@ -404,10 +428,12 @@ function clearFormUserProfile() {
 }
 
 function clearFormPlaydataSp() {
+  spanPlaydataSpUploadedAt.innerText = "---";
   setDataToFormPlaydataSp(makeEmptyPlaydataSp());
 }
 
 function clearFormPlaydataDp() {
+  spanPlaydataDpUploadedAt.innerText = "---";
   setDataToFormPlaydataDp(makeEmptyPlaydataDp());
 }
 
