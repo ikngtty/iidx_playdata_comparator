@@ -8,7 +8,6 @@ import {
   TwitterAuthProvider,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import {
-  deleteDoc,
   getDocFromServer,
   getFirestore,
   runTransaction,
@@ -16,7 +15,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 import { CONFIG as FIREBASE_CONFIG } from "../shared/firebase_util.js";
-import { upsertDocWithTs } from "../shared/firestore_util.js";
+import {
+  updateDocWithTsTx,
+  upsertDocWithTs,
+  upsertDocWithTsTx,
+} from "../shared/firestore_util.js";
 import {
   RuleJustLength,
   RuleMaxLength,
@@ -160,9 +163,16 @@ formPlaydataSp.addEventListener("submit", async (event) => {
     return;
   }
 
+  const uid = auth.currentUser.uid;
   const playdataSp = getDataFromFormPlaydataSp();
-  const playdataSpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "sp");
-  await upsertDocWithTs(playdataSpDocRef, playdataSp);
+  const playdataSpDocRef = getPlaydataDocRef(db, uid, "sp");
+  const userProfileDocRef = getUserProfileDocRef(db, uid);
+  await runTransaction(db, async (tx) => {
+    await upsertDocWithTsTx(tx, playdataSpDocRef, playdataSp);
+    await updateDocWithTsTx(tx, userProfileDocRef, {
+      playdataSpUploadedAt: serverTimestamp(),
+    });
+  });
 
   alert("アップロード完了");
 });
@@ -176,9 +186,16 @@ formPlaydataDp.addEventListener("submit", async (event) => {
     return;
   }
 
+  const uid = auth.currentUser.uid;
   const playdataDp = getDataFromFormPlaydataDp();
-  const playdataDpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "dp");
-  await upsertDocWithTs(playdataDpDocRef, playdataDp);
+  const playdataDpDocRef = getPlaydataDocRef(db, uid, "dp");
+  const userProfileDocRef = getUserProfileDocRef(db, uid);
+  await runTransaction(db, async (tx) => {
+    await upsertDocWithTsTx(tx, playdataDpDocRef, playdataDp);
+    await updateDocWithTsTx(tx, userProfileDocRef, {
+      playdataDpUploadedAt: serverTimestamp(),
+    });
+  });
 
   alert("アップロード完了");
 });
@@ -209,9 +226,16 @@ buttonDeletePlaydataSp.addEventListener("click", (event) => {
 
   if (!confirm("プレーデータ（SP）を削除しますか？")) return;
 
-  const playdataSpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "sp");
-  // NOTE: awaitしない方が良いらしい。
-  deleteDoc(playdataSpDocRef);
+  const uid = auth.currentUser.uid;
+  const playdataSpDocRef = getPlaydataDocRef(db, uid, "sp");
+  const userProfileDocRef = getUserProfileDocRef(db, uid);
+  runTransaction(db, async (tx) => {
+    // WARNING: deleteはawaitしない方がいいってドキュメントにはある。
+    await tx.delete(playdataSpDocRef);
+    await updateDocWithTsTx(tx, userProfileDocRef, {
+      playdataSpUploadedAt: null,
+    });
+  });
 
   alert("プレーデータ（SP）を削除しました。");
 });
@@ -221,9 +245,16 @@ buttonDeletePlaydataDp.addEventListener("click", (event) => {
 
   if (!confirm("プレーデータ（DP）を削除しますか？")) return;
 
-  const playdataDpDocRef = getPlaydataDocRef(db, auth.currentUser.uid, "dp");
-  // NOTE: awaitしない方が良いらしい。
-  deleteDoc(playdataDpDocRef);
+  const uid = auth.currentUser.uid;
+  const playdataDpDocRef = getPlaydataDocRef(db, uid, "dp");
+  const userProfileDocRef = getUserProfileDocRef(db, uid);
+  runTransaction(db, async (tx) => {
+    // WARNING: deleteはawaitしない方がいいってドキュメントにはある。
+    await tx.delete(playdataDpDocRef);
+    await updateDocWithTsTx(tx, userProfileDocRef, {
+      playdataDpUploadedAt: null,
+    });
+  });
 
   alert("プレーデータ（DP）を削除しました。");
 });
