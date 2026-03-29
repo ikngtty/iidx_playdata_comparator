@@ -20,13 +20,14 @@ import {
   upsertDocWithTs,
   upsertDocWithTsTx,
 } from "../shared/firestore_util.js";
+import ValidatableField from "../shared/validation/validatable_field.js";
 import {
   RuleJustLength,
   RuleMaxLength,
   RuleNumeric,
   RuleRequired,
 } from "../shared/validation/rules/common.js";
-import ValidatableField from "../shared/validation/validatable_field.js";
+import { RuleIidxCsv } from "../shared/validation/rules/iidx.js";
 import {
   getUserDocRef,
   getUserProfileDocRef,
@@ -113,12 +114,20 @@ const validatableProfileFields = [
 const validatablePlaydataSp = new ValidatableField(
   textPlaydataSp,
   warningCaptionPlaydataSp,
-  [new RuleRequired("プレーデータ（SP）"), new RuleMaxLength(500000)],
+  [
+    new RuleRequired("プレーデータ（SP）"),
+    new RuleMaxLength(500000),
+    new RuleIidxCsv(),
+  ],
 );
 const validatablePlaydataDp = new ValidatableField(
   textPlaydataDp,
   warningCaptionPlaydataDp,
-  [new RuleRequired("プレーデータ（DP）"), new RuleMaxLength(500000)],
+  [
+    new RuleRequired("プレーデータ（DP）"),
+    new RuleMaxLength(500000),
+    new RuleIidxCsv(),
+  ],
 );
 
 onAuthStateChanged(auth, async (authUser) => {
