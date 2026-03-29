@@ -25,7 +25,7 @@ import {
   RuleMaxLength,
   RuleNumeric,
   RuleRequired,
-} from "../shared/validation/rules.js";
+} from "../shared/validation/rules/common.js";
 import ValidatableField from "../shared/validation/validatable_field.js";
 import {
   getUserDocRef,
