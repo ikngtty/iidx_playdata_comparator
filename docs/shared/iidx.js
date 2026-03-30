@@ -142,7 +142,7 @@ export function compareChart(chart1, chart2) {
     const dif = chart.difficulty;
     const order = DIFFICUTY_ORDER.get(dif);
     if (order == null) {
-      throw new Error(`unexpected difficulty: ${dif}`);
+      throw new Error(`Unexpected difficulty: ${dif}`);
     }
     return order;
   });
@@ -155,7 +155,7 @@ export function compareSong(song1, song2) {
     const name = song.version;
     const num = VERSION_NUMBER_FOR_NAME.get(name);
     if (num == null) {
-      throw new Error(`unexpected version name: ${name}`);
+      throw new Error(`Unexpected version name: ${name}`);
     }
     return num;
   });

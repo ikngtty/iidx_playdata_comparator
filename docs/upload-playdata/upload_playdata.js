@@ -370,7 +370,7 @@ async function renderForUserStatus(userStatus) {
       break;
 
     default:
-      throw new Error(`unexpected user status: ${userStatus}`);
+      throw new Error(`Unexpected user status: ${userStatus}`);
   }
 }
 
