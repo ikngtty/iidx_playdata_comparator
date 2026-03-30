@@ -1,9 +1,41 @@
+.noplay {
+  background-color: #b8b8b8;
+}
+
+.failed {
+  background-color: #ff6060;
+}
+
+.assist {
+  background-color: #c080e0;
+}
+
+.easy {
+  background-color: #80d880;
+}
+
+.clear {
+  background-color: #80b0f0;
+}
+
+.hard {
+  background-color: #fff8e0;
+}
+
+.exhard {
+  background-color: #ffe000;
+}
+
+.fullcombo {
+  background-color: #ff8c00;
+}
+
 .win {
-  background-color: #e8e840;
+  background-color: #ffe000;
 }
 
 .lose {
-  background-color: #80b8e8;
+  background-color: #80b0f0;
 }
 
 .draw {

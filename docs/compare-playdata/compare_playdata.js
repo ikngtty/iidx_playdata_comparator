@@ -63,8 +63,17 @@ function addComparisonRow(tbody, comparison) {
   row.insertCell().textContent = comparison.chart.song.title;
   row.insertCell().textContent = comparison.chart.difficulty;
   row.insertCell().textContent = comparison.chart.level;
-  row.insertCell().textContent = comparison.result1?.clearType;
-  row.insertCell().textContent = comparison.result2?.clearType;
+
+  const clearType1Cell = row.insertCell();
+  clearType1Cell.textContent = comparison.result1?.clearType;
+  clearType1Cell.classList.add(
+    getClassNameForClearType(comparison.result1?.clearType),
+  );
+  const clearType2Cell = row.insertCell();
+  clearType2Cell.textContent = comparison.result2?.clearType;
+  clearType2Cell.classList.add(
+    getClassNameForClearType(comparison.result2?.clearType),
+  );
 
   const missCount1Cell = row.insertCell();
   missCount1Cell.textContent = comparison.result1?.missCount;
@@ -84,6 +93,31 @@ function addComparisonRow(tbody, comparison) {
   score2Cell.classList.add(comparison.scoreWinLose2);
 
   row.insertCell().textContent = comparison.scoreDiff;
+}
+
+function getClassNameForClearType(clearType) {
+  if (clearType == null) return "noplay";
+
+  switch (clearType) {
+    case "NO PLAY":
+      return "noplay";
+    case "FAILED":
+      return "failed";
+    case "ASSIST CLEAR":
+      return "assist";
+    case "EASY CLEAR":
+      return "easy";
+    case "CLEAR":
+      return "clear";
+    case "HARD CLEAR":
+      return "hard";
+    case "EX HARD CLEAR":
+      return "exhard";
+    case "FULLCOMBO CLEAR":
+      return "fullcombo";
+    default:
+      throw new Error(`Unexpected clear type: ${clearType}`);
+  }
 }
 
 function* makeRecordComparisons(compareChart, records1, records2) {
