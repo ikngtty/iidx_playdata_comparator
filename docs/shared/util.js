@@ -1,3 +1,15 @@
+export function mergeComparators(...comparators) {
+  return (a, b) => {
+    for (const comparator of comparators) {
+      const result = comparator(a, b);
+      if (result !== 0) {
+        return result;
+      }
+    }
+    return 0;
+  };
+}
+
 export function checkCsv(text) {
   const lines = readLines(text);
 

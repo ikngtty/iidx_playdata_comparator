@@ -52,6 +52,14 @@ const VERSION_NUMBER_FOR_NAME = (() => {
   return m;
 })();
 
+function getVersionNumberForName(name) {
+  const num = VERSION_NUMBER_FOR_NAME.get(name);
+  if (num == null) {
+    throw new Error(`Unexpected version name: ${name}`);
+  }
+  return num;
+}
+
 const DIFFICUTY_ORDER = (() => {
   const m = new Map();
   DIFFICULTIES.forEach((dif, i) => {
@@ -60,7 +68,31 @@ const DIFFICUTY_ORDER = (() => {
   return m;
 })();
 
+function getDifficultyOrder(difficulty) {
+  const order = DIFFICUTY_ORDER.get(difficulty);
+  if (order == null) {
+    throw new Error(`Unexpected difficulty: ${difficulty}`);
+  }
+  return order;
+}
+
 const SONG_TITLE_COLLATOR = new Intl.Collator("ja");
+
+export function compareVersionName(ver1, ver2) {
+  const num1 = getVersionNumberForName(ver1);
+  const num2 = getVersionNumberForName(ver2);
+  return num1 - num2;
+}
+
+export function compareSongTitle(title1, title2) {
+  return SONG_TITLE_COLLATOR.compare(title1, title2);
+}
+
+export function compareDifficulty(dif1, dif2) {
+  const order1 = getDifficultyOrder(dif1);
+  const order2 = getDifficultyOrder(dif2);
+  return order1 - order2;
+}
 
 export function checkIidxCsv(text) {
   const csvCheckedResult = checkCsv(text);
@@ -156,40 +188,4 @@ export function* parseIidxCsv(text) {
       yield { chart, result };
     }
   }
-}
-
-export function compareChart(chart1, chart2) {
-  const songDelta = compareSong(chart1.song, chart2.song);
-  if (songDelta !== 0) {
-    return songDelta;
-  }
-
-  const [difOrder1, difOrder2] = [chart1, chart2].map((chart) => {
-    const dif = chart.difficulty;
-    const order = DIFFICUTY_ORDER.get(dif);
-    if (order == null) {
-      throw new Error(`Unexpected difficulty: ${dif}`);
-    }
-    return order;
-  });
-
-  return difOrder1 - difOrder2;
-}
-
-export function compareSong(song1, song2) {
-  const [ver1, ver2] = [song1, song2].map((song) => {
-    const name = song.version;
-    const num = VERSION_NUMBER_FOR_NAME.get(name);
-    if (num == null) {
-      throw new Error(`Unexpected version name: ${name}`);
-    }
-    return num;
-  });
-
-  const verDelta = ver1 - ver2;
-  if (verDelta !== 0) {
-    return verDelta;
-  }
-
-  return SONG_TITLE_COLLATOR.compare(song1.title, song2.title);
 }

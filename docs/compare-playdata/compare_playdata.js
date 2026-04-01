@@ -1,4 +1,10 @@
-import { compareChart, parseIidxCsv } from "../shared/iidx.js";
+import {
+  compareDifficulty,
+  compareSongTitle,
+  compareVersionName,
+  parseIidxCsv,
+} from "../shared/iidx.js";
+import { mergeComparators } from "../shared/util.js";
 import ValidatableField from "../shared/validation/validatable_field.js";
 import { RuleIidxCsv } from "../shared/validation/rules/iidx.js";
 
@@ -51,7 +57,23 @@ buttonCompare.addEventListener("click", () => {
     parseIidxCsv(inputCsv.value),
   );
 
-  const comparisons = makeRecordComparisons(compareChart, records1, records2);
+  const compareRecordOrder = mergeComparators(
+    (record1, record2) =>
+      compareVersionName(
+        record1.chart.song.version,
+        record2.chart.song.version,
+      ),
+    (record1, record2) =>
+      compareSongTitle(record1.chart.song.title, record2.chart.song.title),
+    (record1, record2) =>
+      compareDifficulty(record1.chart.difficulty, record2.chart.difficulty),
+  );
+  const comparisons = makeRecordComparisons(
+    compareRecordOrder,
+    records1,
+    records2,
+  );
+
   for (const comparison of comparisons) {
     addComparisonRow(tbody, comparison);
   }
@@ -149,14 +171,14 @@ function getClassNameForClearType(clearType) {
   }
 }
 
-function* makeRecordComparisons(compareChart, records1, records2) {
+function* makeRecordComparisons(compareRecordOrder, records1, records2) {
   // ソート
   const [sortedRecords1, sortedRecords2] = [records1, records2].map((records) =>
-    [...records].sort((left, right) => compareChart(left.chart, right.chart)),
+    [...records].sort(compareRecordOrder),
   );
 
   // 記録を比較しようとして双方の曲が違った時に、どちらを先に処理するか判断するための比較関数
-  const compare = (record1, record2) => {
+  const compareRecordOrderWithNull = (record1, record2) => {
     // nullが常に大きい
     if (record1 == null) {
       return 1;
@@ -164,7 +186,7 @@ function* makeRecordComparisons(compareChart, records1, records2) {
       return -1;
     }
 
-    return compareChart(record1.chart, record2.chart);
+    return compareRecordOrder(record1, record2);
   };
 
   // 片方に無い曲を補完しながら比較を生成
@@ -172,7 +194,7 @@ function* makeRecordComparisons(compareChart, records1, records2) {
   while (i1 < sortedRecords1.length || i2 < sortedRecords2.length) {
     const [record1, record2] = [sortedRecords1[i1], sortedRecords2[i2]];
 
-    const delta = compare(record1, record2);
+    const delta = compareRecordOrderWithNull(record1, record2);
     switch (true) {
       case delta < 0:
         yield makeRecordComparison(record1.chart, record1.result, null);
