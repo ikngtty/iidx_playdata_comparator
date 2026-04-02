@@ -8,10 +8,13 @@ import { mergeComparators } from "../shared/util.js";
 import ValidatableField from "../shared/validation/validatable_field.js";
 import { RuleIidxCsv } from "../shared/validation/rules/iidx.js";
 
+// TODO: 並び替え順の変更時即時反映 or 変更値と表示の不一致を明示（一致してる時は比較ボタンを押せなくするとか）
+
 const inputsCsv = [1, 2].map((i) => document.getElementById(`inputCsv${i}`));
 const warningCaptionsCsv = [1, 2].map((i) =>
   document.getElementById(`warningCaptionCsv${i}`),
 );
+const selectSortBy = document.getElementById("selectSortBy");
 const buttonCompare = document.getElementById("buttonCompare");
 const tableComparison = document.getElementById("tableComparison");
 
@@ -56,19 +59,18 @@ buttonCompare.addEventListener("click", () => {
   const [records1, records2] = inputsCsv.map((inputCsv) =>
     parseIidxCsv(inputCsv.value),
   );
+  const sortBy = selectSortBy.value;
 
-  const compareRecordOrder = mergeComparators(
-    compareRecordOrderByVersionName,
-    compareRecordOrderBySongTitle,
-    compareRecordOrderByDifficulty,
-  );
+  const compareRecordOrder = getComparatorOfRecordOrder(sortBy);
   const comparisons = makeRecordComparisons(
     compareRecordOrder,
     records1,
     records2,
   );
+  const compareComparisonOrder = getComparatorOfComparisonOrder(sortBy);
+  const sortedComparisons = [...comparisons].sort(compareComparisonOrder);
 
-  for (const comparison of comparisons) {
+  for (const comparison of sortedComparisons) {
     addComparisonRow(tbody, comparison);
   }
 });
@@ -254,6 +256,40 @@ function judgeScoreWinLose(score1, score2) {
   return "draw";
 }
 
+function getComparatorOfRecordOrder(sortBy) {
+  switch (sortBy) {
+    case "version":
+    case "scoreDiff":
+      return mergeComparators(
+        compareRecordOrderByVersionName,
+        compareRecordOrderBySongTitle,
+        compareRecordOrderByDifficulty,
+      );
+    default:
+      throw new Error(`Unexpected sort-by: ${sortBy}`);
+  }
+}
+
+function getComparatorOfComparisonOrder(sortBy) {
+  switch (sortBy) {
+    case "version":
+      return mergeComparators(
+        compareComparisonOrderByVersionName,
+        compareComparisonOrderBySongTitle,
+        compareComparisonOrderByDifficulty,
+      );
+    case "scoreDiff":
+      return mergeComparators(
+        compareComparisonOrderByScoreDiff,
+        compareComparisonOrderByVersionName,
+        compareComparisonOrderBySongTitle,
+        compareComparisonOrderByDifficulty,
+      );
+    default:
+      throw new Error(`Unexpected sort-by: ${sortBy}`);
+  }
+}
+
 function compareRecordOrderByVersionName(record1, record2) {
   return compareVersionName(
     record1.chart.song.version,
@@ -267,4 +303,53 @@ function compareRecordOrderBySongTitle(record1, record2) {
 
 function compareRecordOrderByDifficulty(record1, record2) {
   return compareDifficulty(record1.chart.difficulty, record2.chart.difficulty);
+}
+
+function compareComparisonOrderByVersionName(comparison1, comparison2) {
+  return compareVersionName(
+    comparison1.chart.song.version,
+    comparison2.chart.song.version,
+  );
+}
+
+function compareComparisonOrderBySongTitle(comparison1, comparison2) {
+  return compareSongTitle(
+    comparison1.chart.song.title,
+    comparison2.chart.song.title,
+  );
+}
+
+function compareComparisonOrderByDifficulty(comparison1, comparison2) {
+  return compareDifficulty(
+    comparison1.chart.difficulty,
+    comparison2.chart.difficulty,
+  );
+}
+
+function compareComparisonOrderByScoreDiff(comparison1, comparison2) {
+  const diff1 = comparison1.scoreDiff;
+  const diff2 = comparison2.scoreDiff;
+
+  if (diff1 != null && diff2 != null) return diff2 - diff1;
+
+  if (diff1 == null && diff2 != null) return 1;
+  if (diff1 != null && diff2 == null) return -1;
+
+  const getNominalDiff = (comparison) => {
+    const score1 = comparison.result1?.score;
+    const score2 = comparison.result2?.score;
+    if (score1 == null && score2 == null) return null;
+    return (score1 ?? 0) - (score2 ?? 0);
+  };
+
+  const nominalDiff1 = getNominalDiff(comparison1);
+  const nominalDiff2 = getNominalDiff(comparison2);
+
+  if (nominalDiff1 != null && nominalDiff2 != null)
+    return nominalDiff2 - nominalDiff1;
+
+  if (nominalDiff1 == null && nominalDiff2 != null) return 1;
+  if (nominalDiff1 != null && nominalDiff2 == null) return -1;
+
+  return 0;
 }
