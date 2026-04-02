@@ -68,7 +68,9 @@ buttonCompare.addEventListener("click", () => {
     records2,
   );
   const compareComparisonOrder = getComparatorOfComparisonOrder(sortBy);
-  const sortedComparisons = [...comparisons].sort(compareComparisonOrder);
+  const sortedComparisons = compareComparisonOrder
+    ? [...comparisons].sort(compareComparisonOrder)
+    : comparisons;
 
   for (const comparison of sortedComparisons) {
     addComparisonRow(tbody, comparison);
@@ -278,11 +280,7 @@ function getComparatorOfRecordOrder(sortBy) {
 function getComparatorOfComparisonOrder(sortBy) {
   switch (sortBy) {
     case "version":
-      return mergeComparators(
-        compareComparisonOrderByVersionName,
-        compareComparisonOrderBySongTitle,
-        compareComparisonOrderByDifficulty,
-      );
+      return null;
     case "scoreDiff":
       return mergeComparators(
         compareComparisonOrderByScoreDiff,
