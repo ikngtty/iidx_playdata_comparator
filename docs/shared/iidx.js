@@ -141,10 +141,17 @@ export function* parseIidxCsv(text) {
     };
 
     for (const difficulty of DIFFICULTIES) {
-      const level = row[`${difficulty} 難易度`];
-      if (level === "0") {
+      const levelText = row[`${difficulty} 難易度`];
+      if (levelText === "0") {
         continue;
       }
+      const level = (() => {
+        const num = Number(levelText);
+        if (isNaN(num)) {
+          throw new Error(`Unexpected level: "${levelText}"`);
+        }
+        return num;
+      })();
 
       const chart = {
         song,
