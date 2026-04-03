@@ -1,5 +1,6 @@
 import {
   compareDifficulty,
+  compareLevel,
   compareSongTitle,
   compareVersionName,
   parseIidxCsv,
@@ -308,6 +309,20 @@ function getComparatorOfRecordOrder(sortBy) {
         compareRecordOrderBySongTitle,
         compareRecordOrderByDifficulty,
       );
+    case "levelAsc":
+      return mergeComparators(
+        compareRecordOrderByLevelAsc,
+        compareRecordOrderBySongTitle,
+        compareComparisonOrderByVersionName,
+        compareComparisonOrderByDifficulty,
+      );
+    case "levelDesc":
+      return mergeComparators(
+        compareRecordOrderByLevelDesc,
+        compareRecordOrderBySongTitle,
+        compareComparisonOrderByVersionName,
+        compareComparisonOrderByDifficulty,
+      );
     default:
       throw new Error(`Unexpected sort-by: ${sortBy}`);
   }
@@ -316,6 +331,8 @@ function getComparatorOfRecordOrder(sortBy) {
 function getComparatorOfComparisonOrder(sortBy) {
   switch (sortBy) {
     case "version":
+    case "levelAsc":
+    case "levelDesc":
       return null;
     case "scoreDiff":
       return mergeComparators(
@@ -342,6 +359,14 @@ function compareRecordOrderBySongTitle(record1, record2) {
 
 function compareRecordOrderByDifficulty(record1, record2) {
   return compareDifficulty(record1.chart.difficulty, record2.chart.difficulty);
+}
+
+function compareRecordOrderByLevelAsc(record1, record2) {
+  return compareLevel(record1.chart.level, record2.chart.level);
+}
+
+function compareRecordOrderByLevelDesc(record1, record2) {
+  return compareLevel(record2.chart.level, record1.chart.level);
 }
 
 function compareComparisonOrderByVersionName(comparison1, comparison2) {

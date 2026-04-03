@@ -94,6 +94,10 @@ export function compareDifficulty(dif1, dif2) {
   return order1 - order2;
 }
 
+export function compareLevel(level1, level2) {
+  return level1 - level2;
+}
+
 export function checkIidxCsv(text) {
   const csvCheckedResult = checkCsv(text);
   if (!csvCheckedResult.isValid) {
