@@ -320,6 +320,8 @@ function getComparatorOfRecordOrder(sortBy) {
     case "version":
     case "scoreDiff":
     case "clearDiff":
+    case "player1MissCount":
+    case "player2MissCount":
       return mergeComparators(
         compareRecordOrderByVersionName,
         compareRecordOrderBySongTitle,
@@ -365,9 +367,36 @@ function getComparatorOfComparisonOrder(sortBy) {
         compareComparisonOrderByVersionName,
         compareComparisonOrderByDifficulty,
       );
+    case "player1MissCount":
+      return mergeComparators(
+        compareComparisonOrderByPlayer1MissCount,
+        compareComparisonOrderByLevelAsc,
+        compareComparisonOrderBySongTitle,
+        compareComparisonOrderByVersionName,
+        compareComparisonOrderByDifficulty,
+      );
+    case "player2MissCount":
+      return mergeComparators(
+        compareComparisonOrderByPlayer2MissCount,
+        compareComparisonOrderByLevelAsc,
+        compareComparisonOrderBySongTitle,
+        compareComparisonOrderByVersionName,
+        compareComparisonOrderByDifficulty,
+      );
     default:
       throw new Error(`Unexpected sort-by: ${sortBy}`);
   }
+}
+
+function compareResultOrderByPlayerMissCount(result1, result2) {
+  const missCount1 = result1?.missCount;
+  const missCount2 = result2?.missCount;
+
+  if (missCount1 == null && missCount2 == null) return 0;
+  // nullが常に大きい
+  if (missCount1 == null) return 1;
+  if (missCount2 == null) return -1;
+  return missCount1 - missCount2;
 }
 
 function compareRecordOrderByVersionName(record1, record2) {
@@ -433,6 +462,20 @@ function compareComparisonOrderByPlayer2ClearType(comparison1, comparison2) {
   return compareClearType(
     comparison1.result2?.clearType ?? "NO PLAY",
     comparison2.result2?.clearType ?? "NO PLAY",
+  );
+}
+
+function compareComparisonOrderByPlayer1MissCount(comparison1, comparison2) {
+  return compareResultOrderByPlayerMissCount(
+    comparison1.result1,
+    comparison2.result1,
+  );
+}
+
+function compareComparisonOrderByPlayer2MissCount(comparison1, comparison2) {
+  return compareResultOrderByPlayerMissCount(
+    comparison1.result2,
+    comparison2.result2,
   );
 }
 
