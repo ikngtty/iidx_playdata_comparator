@@ -8,17 +8,33 @@ import {
   orderBy,
   startAt,
   query,
+  where,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 import { CONFIG as FIREBASE_CONFIG } from "../shared/firebase_util.js";
 import { getPlaydataDocRef } from "../shared/repository.js";
 import { firestoreTimestampToString } from "../shared/util.js";
+import ValidatableField from "../shared/validation/validatable_field.js";
+import {
+  RuleJustLength,
+  RuleNumeric,
+} from "../shared/validation/rules/common.js";
 
 const USER_PROFILE_COUNT_PER_PAGE = 10;
 
+const inputIidxId = document.getElementById("inputIidxId");
+const warningCaptionIidxId = document.getElementById("warningCaptionIidxId");
 const buttonSearch = document.getElementById("buttonSearch");
 const tableUsers = document.getElementById("tableUsers");
 const buttonSearchNext = document.getElementById("buttonSearchNext");
+
+const validatableFieldIidxId = new ValidatableField(
+  inputIidxId,
+  warningCaptionIidxId,
+  [new RuleJustLength(8), new RuleNumeric()],
+);
+
+const validatableFilterFileds = [validatableFieldIidxId];
 
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
@@ -29,14 +45,32 @@ let lastSearch = {
 };
 
 buttonSearch.addEventListener("click", async () => {
+  // バリデーションチェック
+  validatableFilterFileds.forEach((field) => {
+    field.clearWarning();
+  });
+  const isInvalids = validatableFilterFileds.map((field) =>
+    field.warnIfInvalid(),
+  );
+  if (isInvalids.some((isInvalid) => isInvalid)) {
+    return;
+  }
+
   // テーブルのリセット
   const tbody = tableUsers.tBodies[0];
   tbody.replaceChildren();
+
+  const filter = getFilterFromForm();
+  const constraints = [];
+  if (filter.iidxId) {
+    constraints.push(where("iidxId", "==", filter.iidxId));
+  }
 
   const searchQuery = query(
     collection(db, "userProfiles"),
     orderBy("createdAt", "desc"),
     limit(USER_PROFILE_COUNT_PER_PAGE + 1),
+    ...constraints,
   );
 
   const userProfilesSnapshot = await getDocsFromServer(searchQuery);
@@ -129,4 +163,10 @@ function addUserRow(tbody, userId, userProfile) {
     });
     buttonsToCompareCell.appendChild(document.createElement("br"));
   });
+}
+
+function getFilterFromForm() {
+  return {
+    iidxId: inputIidxId.value.trim(),
+  };
 }
