@@ -44,10 +44,32 @@ const validatableFieldIidxId = new ValidatableField(
   [new RuleJustLength(8), new RuleNumeric()],
 );
 
-const validatableFilterFileds = [
-  validatableFieldDisplayName,
-  validatableFieldIidxId,
-];
+const filterAreas = {
+  displayName: {
+    validatableFields: [validatableFieldDisplayName],
+    clear() {
+      inputDisplayName.value = "";
+    },
+    enable() {
+      inputDisplayName.disabled = false;
+    },
+    disable() {
+      inputDisplayName.disabled = true;
+    },
+  },
+  iidxId: {
+    validatableFields: [validatableFieldIidxId],
+    clear() {
+      inputIidxId.value = "";
+    },
+    enable() {
+      inputIidxId.disabled = false;
+    },
+    disable() {
+      inputIidxId.disabled = true;
+    },
+  },
+};
 
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
@@ -58,13 +80,15 @@ let lastSearch = {
 };
 
 buttonSearch.addEventListener("click", async () => {
+  const filterChoice = getSelectedFilterChoice();
+  const selectedFilterArea = filterAreas[filterChoice];
+
   // バリデーションチェック
-  validatableFilterFileds.forEach((field) => {
+  const validatableFields = selectedFilterArea.validatableFields;
+  validatableFields.forEach((field) => {
     field.clearWarning();
   });
-  const isInvalids = validatableFilterFileds.map((field) =>
-    field.warnIfInvalid(),
-  );
+  const isInvalids = validatableFields.map((field) => field.warnIfInvalid());
   if (isInvalids.some((isInvalid) => isInvalid)) {
     return;
   }
@@ -74,17 +98,29 @@ buttonSearch.addEventListener("click", async () => {
   tbody.replaceChildren();
 
   // クエリの組み立て
-  // TODO: 条件の複合はユースケースとしても要らないし、インデックスの管理がだるいのでやめたい。
-  const filter = getFilterFromForm();
   const constraints = [];
-  if (filter.displayName) {
-    constraints.push(where("userName", ">=", filter.displayName));
-    constraints.push(
-      where("userName", "<=", filter.displayName + "\u{10FFFF}"),
-    );
-  }
-  if (filter.iidxId) {
-    constraints.push(where("iidxId", "==", filter.iidxId));
+  switch (filterChoice) {
+    case "displayName": {
+      const displayNameFilter = inputDisplayName.value.trim();
+      if (!displayNameFilter) break;
+
+      constraints.push(where("userName", ">=", displayNameFilter));
+      constraints.push(
+        where("userName", "<=", displayNameFilter + "\u{10FFFF}"),
+      );
+      break;
+    }
+
+    case "iidxId": {
+      const iidxIdFilter = inputIidxId.value.trim();
+      if (!iidxIdFilter) break;
+
+      constraints.push(where("iidxId", "==", iidxIdFilter));
+      break;
+    }
+
+    default:
+      throw new Error(`Unknown filter choice: ${filterChoice}`);
   }
   if (constraints.length === 0) {
     // NOTE: where句がある場合はそれがorderByの基準となる。
@@ -134,6 +170,17 @@ buttonSearchNext.addEventListener("click", async () => {
     });
 });
 
+document
+  .getElementsByName("filterChoice")
+  .forEach((radio) =>
+    radio.addEventListener("change", handleFilterChoiceChecked),
+  );
+
+function handleFilterChoiceChecked(event) {
+  const filterChoice = event.currentTarget.value;
+  renderForFilterChoice(filterChoice);
+}
+
 async function handleButtonCompareClick(event) {
   const { userId, playside, playerIndex } = event.currentTarget.dataset;
 
@@ -143,6 +190,15 @@ async function handleButtonCompareClick(event) {
 
   localStorage.setItem(`iidxComparator.csv${playerIndex}`, playdata);
   location.href = "../compare-playdata/";
+}
+
+function renderForFilterChoice(filterChoice) {
+  Object.values(filterAreas).forEach((area) => {
+    area.validatableFields.forEach((field) => field.clearWarning());
+    area.clear();
+    area.disable();
+  });
+  filterAreas[filterChoice].enable();
 }
 
 function renderForLastSearch(lastSearch) {
@@ -190,9 +246,6 @@ function addUserRow(tbody, userId, userProfile) {
   });
 }
 
-function getFilterFromForm() {
-  return {
-    displayName: inputDisplayName.value.trim(),
-    iidxId: inputIidxId.value.trim(),
-  };
+function getSelectedFilterChoice() {
+  return document.querySelector("input[name='filterChoice']:checked").value;
 }

@@ -12,15 +12,19 @@
     <h1>プレイヤー検索</h1>
 
     <fieldset>
-      <h2>検索条件</h2>
-
-      表示名:
+      <label>
+        <input type="radio" name="filterChoice" value="displayName" checked>
+        表示名で絞り込み
+      </label>
       <input type="text" id="inputDisplayName">
       <span id="warningCaptionDisplayName" class="warningCaption"></span>
       <br>
 
-      IIDX ID:
-      <input type="text" id="inputIidxId">
+      <label>
+        <input type="radio" name="filterChoice" value="iidxId">
+        IIDX IDで絞り込み
+      </label>
+      <input type="text" id="inputIidxId" disabled>
       <span id="warningCaptionIidxId" class="warningCaption"></span>
       <br>
     </fieldset>
